@@ -17,10 +17,10 @@ public class Future<A> {
   let resultQueue = dispatch_queue_create("swift.future", DISPATCH_QUEUE_CONCURRENT)
 
   let execCtx: ExecutionContext // for map
-//  public init(exec: ExecutionContext) {
-//    dispatch_suspend(self.resultQueue)
-//    execCtx = exec
-//  }
+  public init(exec: ExecutionContext) {
+    dispatch_suspend(self.resultQueue)
+    execCtx = exec
+  }
 
   public init(exec: ExecutionContext, _ a: () -> A) {
     dispatch_suspend(self.resultQueue)
@@ -28,11 +28,11 @@ public class Future<A> {
     exec.submit(self, work: a)
   }
 
-//  public init(exec: ExecutionContext, _ a: @autoclosure () -> A) {
-//    dispatch_suspend(self.resultQueue)
-//    execCtx = exec
-//    exec.submit(self, work: a)
-//  }
+  //  public init(exec: ExecutionContext, _ a: @autoclosure () -> A) {
+  //    dispatch_suspend(self.resultQueue)
+  //    execCtx = exec
+  //    exec.submit(self, work: a)
+  //  }
 
   public func completeWith(x: A) {
     assert(self.value == nil, "Future cannot complete more than once")
@@ -54,5 +54,13 @@ public class Future<A> {
 
   public func flatMap<B>(f: A -> Future<B>) -> Future<B> {
     return Future<B>(exec: execCtx, { f(self.result()).result() })
+  }
+}
+
+func sequence<A>(futures: [Future<A>]) -> Future<[A]> {
+  return Future(exec: gcdExecutionContext) {
+    futures.reduce([]) { acc, future in
+      return acc + [future.result()]
+    }
   }
 }
