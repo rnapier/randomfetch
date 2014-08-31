@@ -64,3 +64,10 @@ func sequence<A>(futures: [Future<A>]) -> Future<[A]> {
     }
   }
 }
+
+// FIXME: This should be combinable with the Result version. 
+// But not sure how to define Functor without forcing Result and Future to be subclasses
+// Result is an enum, so that's hard.
+func <**><A,B>(a: Future<A>, f: A -> B) -> Future<B> {
+  return a.map(f)
+}

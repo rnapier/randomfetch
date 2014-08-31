@@ -13,6 +13,7 @@
 		FBAD00C119B3660F00DBD573 /* ExecutionContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD00C019B3660F00DBD573 /* ExecutionContext.swift */; };
 		FBAD00C319B3664E00DBD573 /* GCDExecutionContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD00C219B3664E00DBD573 /* GCDExecutionContext.swift */; };
 		FBAD00C519B36A3800DBD573 /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD00C419B36A3800DBD573 /* JSON.swift */; };
+		FBAD00C819B3C29100DBD573 /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD00C719B3C29100DBD573 /* Promise.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +36,7 @@
 		FBAD00C019B3660F00DBD573 /* ExecutionContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExecutionContext.swift; sourceTree = "<group>"; };
 		FBAD00C219B3664E00DBD573 /* GCDExecutionContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GCDExecutionContext.swift; sourceTree = "<group>"; };
 		FBAD00C419B36A3800DBD573 /* JSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
+		FBAD00C719B3C29100DBD573 /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				FBAD00A219B2890400DBD573 /* main.swift */,
+				FBAD00C719B3C29100DBD573 /* Promise.swift */,
 				FBAD00C419B36A3800DBD573 /* JSON.swift */,
 				FBAD00A919B2891B00DBD573 /* Result.swift */,
 				FBAD00BE19B365F200DBD573 /* Future.swift */,
@@ -135,6 +138,7 @@
 			files = (
 				FBAD00C319B3664E00DBD573 /* GCDExecutionContext.swift in Sources */,
 				FBAD00BF19B365F200DBD573 /* Future.swift in Sources */,
+				FBAD00C819B3C29100DBD573 /* Promise.swift in Sources */,
 				FBAD00AA19B2891B00DBD573 /* Result.swift in Sources */,
 				FBAD00C519B36A3800DBD573 /* JSON.swift in Sources */,
 				FBAD00C119B3660F00DBD573 /* ExecutionContext.swift in Sources */,

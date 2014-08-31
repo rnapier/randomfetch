@@ -121,7 +121,7 @@ func ??<T>(result: Result<T>, defaultValue: @autoclosure () -> T) -> T {
   }
 }
 
-final class Box<T> {
+public final class Box<T> {
   let unbox: T
   init(_ value: T) { self.unbox = value }
 }
@@ -137,6 +137,7 @@ infix operator <*> {associativity left}
 func <*><A,B>(f: A -> B, a: Result<A>) -> Result<B> {
   return a.map(f)
 }
+
 
 infix operator <**> {associativity left}
 func <**><A,B>(a: Result<A>, f: A -> B) -> Result<B> {

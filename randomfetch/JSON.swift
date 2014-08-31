@@ -63,7 +63,11 @@ func forKey(key: String)(dictionary: JSONDictionary) -> Result<JSON> {
   }
 }
 
-func forEach<T>(f: JSON -> Result<T>)(array: JSONArray) -> Result<[T]> {
+func forEach<T,U>(f: T -> Result<U>)(array: [T]) -> Result<[U]> {
+  return sequence(array.map(f))
+}
+
+func forEach<T,U>(f: T -> Promise<U>)(array: [T]) -> Promise<[U]> {
   return sequence(array.map(f))
 }
 
