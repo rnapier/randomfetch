@@ -7,25 +7,6 @@
 //
 
 
-//func fetchRandomPages(count: Int, completionHandler) -> Result<[Page]> {
-//  let randomURL = "http://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=\(count)"
-//  var error: NSError?
-//  let data = NSURLConnection.sendSynchronousRequest(NSURLRequest(URL: NSURL(string: randomURL)), returningResponse: nil, error: &error)
-//
-//  switch (data, error) {
-//
-//  case (_, .Some(let error)):
-//    return .Failure(error)
-//
-//  case (.Some(let data), _):
-//    return pagesFromRandomQueryData(data)
-//
-//  default:
-//    fatalError("Did not receive an error or data.")
-//  }
-//}
-//
-
 import Foundation
 
 class Page {
@@ -60,8 +41,8 @@ func apiResult<T>(url: NSURL, parser: NSData -> Result<T> ) -> Future<Result<T>>
 }
 
 func randomPage() -> Future<Result<Page>> {
-  return apiResult(NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=1")) { data in
-         asJSON(data)     >>== asJSONDictionary
+  return apiResult(NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=1")) { $0
+      |> asJSON           >>== asJSONDictionary
     >>== forKey("query")  >>== asJSONDictionary
     >>== forKey("random") >>== asJSONArray
     >>== atIndex(0)       >>== asJSONDictionary
@@ -69,21 +50,21 @@ func randomPage() -> Future<Result<Page>> {
 }
 }
 
-
 func imagePageTitlesForPage(page: Page) -> Future<Result<[String]>> {
+  // Example JSON: https://en.wikipedia.org/w/api.php?action=query&titles=Albert%20Einstein&prop=images&format=jsonfm
   let title = (page.title as NSString).stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
-  println("http://en.wikipedia.org/w/api.php?action=query&titles=\(title)&prop=images&format=json")
 
-  return apiResult(NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&titles=\(title)&prop=images&format=json")) { data in
-         asJSON(data)    >>== asJSONDictionary
+  let url = NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&titles=\(title)&prop=images&format=json")
+  return apiResult(url) { $0
+      |> asJSON          >>== asJSONDictionary
     >>== forKey("query") >>== asJSONDictionary
     >>== forKey("pages") >>== asJSONDictionary
     >>== forKey(toString(page.identifier)) >>== asJSONDictionary
-    >>== forKey("images") >>== asJSONArray |> rescueWith(JSONArray())
-    >>== forEach { json in
-               asJSONDictionary(json)
-          >>== forKey("title") >>== asString
-    }
+    >>== forKey("images") >>== asJSONArray |> rescueWith([])
+
+    >>== forEach { $0 |> asJSONDictionary
+                   >>== forKey("title") >>== asString
+                 }
   }
 }
 
@@ -94,9 +75,17 @@ func imagePageTitlesForPossiblePage(page: Result<Page>) -> Future<Result<[String
   }
 }
 
-println(resultDescription(randomPage().result()))
 
-let titles = randomPage().flatMap(imagePageTitlesForPossiblePage).result()
-println(resultDescription(titles))
+// pageTitles is a Future<Result<[String]>
+let pageTitles = imagePageTitlesForPage(Page(title: "Albert Einstein", identifier: 736))
 
-//println(resultDescription(page.result()))
+// output maps teh array down to a Future<Result<String>>
+let output = pageTitles.map { result in result.map { titles in join("\n", titles) } }
+
+// At this point, everything is still running asynchronously.
+
+// This call to result() will block until the processing is completed
+// result is a Result<String>
+let result = output.result()
+
+println(result)

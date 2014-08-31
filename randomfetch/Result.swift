@@ -103,22 +103,13 @@ func sequence<A>(results: [Result<A>]) -> Result<[A]> {
   }
 }
 
-func resultDescription<T where T:Printable>(x: Result<T>) -> String {
-  switch x {
-    case .Success(let box): return box.unbox.description
-    case .Failure(let err): return err.description
-  }
-}
-
-func resultDescription<T>(x: Result<T>) -> String {
-  switch x {
-    case .Success(let box): return reflect(box.unbox).summary
-    case .Failure(let err): return err.description
-  }
-}
-
 extension Result : Printable {
-  var description: String { return resultDescription(self) }
+  var description: String {
+   switch self {
+    case .Success(let box): return "\(box.unbox)"
+    case .Failure(let err): return err.description
+  }
+}
 }
 
 func ??<T>(result: Result<T>, defaultValue: @autoclosure () -> T) -> T {

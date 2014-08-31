@@ -107,13 +107,13 @@ func mkPage(title: String)(identifier: Int) -> Page {
 
 func asPage(dictionary: JSONDictionary) -> Result<Page> {
   return mkPage <^>
-      success(dictionary) >>== forKey("title") >>== asString <*>
-      success(dictionary) >>== forKey("id") >>== asInt
+      dictionary |> forKey("title") >>== asString <*>
+      dictionary |> forKey("id") >>== asInt
 }
 
 func asPages(array: JSONArray) -> Result<[Page]> {
   return sequence(array.map {
-    success($0) >>== asJSONDictionary
+    $0 |> asJSONDictionary
       >>== asPage
     })
 }
