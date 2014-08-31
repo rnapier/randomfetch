@@ -139,7 +139,7 @@ func <*><A,B>(f: A -> B, a: Result<A>) -> Result<B> {
 }
 
 
-infix operator <**> {associativity left}
+infix operator <**> {associativity left precedence 150}
 func <**><A,B>(a: Result<A>, f: A -> B) -> Result<B> {
   return a.map(f)
 }
@@ -163,4 +163,8 @@ infix operator |> { precedence 150 associativity left }
 
 public func |> <T,U>(lhs: T, rhs: T -> U) -> U {
     return rhs(lhs)
+}
+
+func forEach<T,U>(f: T -> Result<U>)(array: [T]) -> Result<[U]> {
+  return sequence(array.map(f))
 }

@@ -8,6 +8,7 @@
 
 
 import Foundation
+import CoreGraphics
 
 class Page {
   let title: String
@@ -22,32 +23,32 @@ extension Page : Printable {
   var description: String { return self.title }
 }
 
-func apiResult<T>(url: NSURL, parser: NSData -> Result<T> ) -> Future<Result<T>> {
-  return Future(exec: gcdExecutionContext) {
-    var error: NSError?
-    let data = NSURLConnection.sendSynchronousRequest(NSURLRequest(URL: url), returningResponse: nil, error: &error)
-    switch (data, error) {
+//func apiResult<T>(url: NSURL, parser: NSData -> Result<T> ) -> Future<Result<T>> {
+//  return Future(exec: gcdExecutionContext) {
+//    var error: NSError?
+//    let data = NSURLConnection.sendSynchronousRequest(NSURLRequest(URL: url), returningResponse: nil, error: &error)
+//    switch (data, error) {
+//
+//    case (_, .Some(let error)):
+//      return .Failure(error)
+//
+//  case (.Some(let data), _):
+//    return parser(data)
+//
+//  default:
+//    fatalError("Did not receive an error or data.")
+//  }
+//}
+//}
 
-    case (_, .Some(let error)):
-      return .Failure(error)
-
-  case (.Some(let data), _):
-    return parser(data)
-
-  default:
-    fatalError("Did not receive an error or data.")
-  }
-}
-}
-
-func randomPages(#count: Int) -> Future<Result<[Page]>> {
-  return apiResult(NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=\(count)")) { $0
-      |> asJSON           >>== asJSONDictionary
-    >>== forKey("query")  >>== asJSONDictionary
-    >>== forKey("random") >>== asJSONArray
-    >>== forEach { $0 |> asJSONDictionary >>== asPage }
-}
-}
+//func randomPages(#count: Int) -> Future<Result<[Page]>> {
+//  return apiResult(NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnlimit=\(count)")) { $0
+//      |> asJSON           >>== asJSONDictionary
+//    >>== forKey("query")  >>== asJSONDictionary
+//    >>== forKey("random") >>== asJSONArray
+//    >>== forEach { $0 |> asJSONDictionary >>== asPage }
+//}
+//}
 
 func apiResultP<T>(url: NSURL, parser: NSData -> Result<T> ) -> Promise<T> {
   return Promise(future: Future(exec: gcdExecutionContext) {
@@ -96,37 +97,45 @@ func imagePageTitlesForPageP(page: Page) -> Promise<[(Page, String)]> {
   }
 }
 
-func imagePageTitlesForPage(page: Page) -> Future<Result<[(Page, String)]>> {
-  // Example JSON: https://en.wikipedia.org/w/api.php?action=query&titles=Albert%20Einstein&prop=images&format=jsonfm
-  let title = (page.title as NSString).stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
-
-  let url = NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&titles=\(title)&prop=images&format=json")
-  return apiResult(url) { $0
-      |> asJSON          >>== asJSONDictionary
-    >>== forKey("query") >>== asJSONDictionary
-    >>== forKey("pages") >>== asJSONDictionary
-    >>== forKey(toString(page.identifier)) >>== asJSONDictionary
-    >>== forKey("images") >>== asJSONArray |> rescueWith([])
-
-    >>== forEach { $0 |> asJSONDictionary
-                   >>== forKey("title") >>== asString
-                   <**> { (page, $0) }
-                 }
-  }
-}
+//func imagePageTitlesForPage(page: Page) -> Future<Result<[(Page, String)]>> {
+//  // Example JSON: https://en.wikipedia.org/w/api.php?action=query&titles=Albert%20Einstein&prop=images&format=jsonfm
+//  let title = (page.title as NSString).stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
+//
+//  let url = NSURL(string: "http://en.wikipedia.org/w/api.php?action=query&titles=\(title)&prop=images&format=json")
+//  return apiResult(url) { $0
+//      |> asJSON          >>== asJSONDictionary
+//    >>== forKey("query") >>== asJSONDictionary
+//    >>== forKey("pages") >>== asJSONDictionary
+//    >>== forKey(toString(page.identifier)) >>== asJSONDictionary
+//    >>== forKey("images") >>== asJSONArray |> rescueWith([])
+//
+//    >>== forEach { $0 |> asJSONDictionary
+//                   >>== forKey("title") >>== asString
+//                   <**> { (page, $0) }
+//                 }
+//  }
+//}
 
 func flatten<T>(array: [[T]]) -> [T] {
   return reduce(array, []) { $0 + $1 }
 }
 
+func imageForTitle(title: String) -> Promise<CGImage> {
+  return Promise.failure(NSError(localizedDescription: ""))
+}
+
+func forEach<T,U>(f: T -> U)(array: [T]) -> [U] {
+  return array.map(f)
+}
 
 //let titles = randomPages(count: 10).map { result in result.flatMap { pages in sequence(pages.map { page in imagePageTitlesForPage(page).result() }).map(flatten) } }
 //let titles = randomPagesP(count: 10)
 //  >>== { sequence($0.map(imagePageTitlesForPageP)).map(flatten) }
 
-let titles = randomPagesP(count: 10)
+let images = randomPagesP(count: 10)
   >>== forEach(imagePageTitlesForPageP)
   <**> flatten
+  <**> forEach { page, title in (page, imageForTitle(title)) }
 
 
-println(titles.result())
+println(images.result())

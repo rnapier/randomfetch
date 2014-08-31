@@ -53,3 +53,7 @@ func <**><A,B>(a: Promise<A>, f: A -> B) -> Promise<B> {
   return a.map(f)
 }
 
+func forEach<T,U>(f: T -> Promise<U>)(array: [T]) -> Promise<[U]> {
+  return sequence(array.map(f))
+}
+
